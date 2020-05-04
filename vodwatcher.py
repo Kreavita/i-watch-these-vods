@@ -2,18 +2,12 @@
 WATCH_TIME = 11 # How many minutes should be watched? 11 Should be enough to get rewards
 
 #script begins
-import os, time, sys
-try:
-    from selenium import webdriver
-    from selenium.webdriver.common.by import By
-    from selenium.webdriver.support.ui import WebDriverWait
-    from selenium.webdriver.support import expected_conditions as EC
-except:
-    proc = subprocess.check_call([sys.executable, "-m", "pip", "install", "selenium"])
-    from selenium import webdriver
-    from selenium.webdriver.common.by import By
-    from selenium.webdriver.support.ui import WebDriverWait
-    from selenium.webdriver.support import expected_conditions as EC
+import os, time, sys, subprocess
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
 exe = ""
 if os.name == "nt": exe = ".exe"
 
@@ -51,36 +45,36 @@ for line in file_read(os.path.join(launch_path, 'data', 'index')):
 for line in file_read(os.path.join(launch_path, 'data', 'sources_vods')):
     if len(line) > 4: vod_list.append(line.strip())
 
-try: driver = webdriver.Firefox(executable_path=os.path.join(launch_path, "driver", "geckodriver" + exe))
-except Exception as e:
-    print("WebDriver: Error occured with Firefox: {0}, forcing Chrome...".format(e))
-    driver = webdriver.Chrome(executable_path=os.path.join(launch_path, "driver", "chromedriver" + exe))
+def watch():
+    try: driver = webdriver.Firefox(executable_path=os.path.join(launch_path, "driver", "geckodriver" + exe))
+    except Exception as e:
+        print("WebDriver: Error occured with Firefox: {0}, forcing Chrome...".format(e))
+        driver = webdriver.Chrome(executable_path=os.path.join(launch_path, "driver", "chromedriver" + exe))
 
-driver.maximize_window()
-driver.implicitly_wait(10)
+    driver.maximize_window()
+    driver.implicitly_wait(10)
 
-driver.get("https://watch.lolesports.com")
-cinput('[{0}] Script loaded, Log in into the League Page to gain Rewards and then press Enter to continue...'.format(time.ctime(time.time())))
+    driver.get("https://watch.lolesports.com")
+    cinput('[{0}] Script loaded, Log in into the League Page to gain Rewards and then press Enter to continue...'.format(time.ctime(time.time())))
 
-for i in range(index, len(vod_list)):
-    inline_prt("[{0}] Watching {1} of {2} for {3} Minutes ...".format(time.ctime(time.time()), i + 1, len(vod_list), WATCH_TIME))
-
-    driver.get(vod_list[i])
-    
-    WebDriverWait(driver, 10).until(EC.frame_to_be_available_and_switch_to_it((By.ID, "video-player-youtube")))
-
-    time.sleep(1)
-    
-    if WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//video'))).get_attribute("currentTime") == "0":
-        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//button[@aria-label="Play"]'))).click()
+    for i in range(index, len(vod_list)):
+        inline_prt("[{0}] Watching {1} of {2} for {3} Minutes ...".format(time.ctime(time.time()), i + 1, len(vod_list), WATCH_TIME))
         
-    driver.switch_to.default_content()
-    
-    time.sleep(WATCH_TIME * 60)
-    
-    driver.get("https://watch.lolesports.com/rewards")
-    file_write(os.path.join(launch_path, 'data', 'index'), str(i))
+        driver.get(vod_list[i])
+        WebDriverWait(driver, 30).until(EC.frame_to_be_available_and_switch_to_it((By.ID, "video-player-youtube")))
+        
+        try: WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'ytp-large-play-button')]"))).click()
+        except: pass
+            
+        driver.switch_to.default_content()
 
-driver.quit()
+        time.sleep(WATCH_TIME * 60)
+        
+        driver.get("https://watch.lolesports.com/rewards")
+        file_write(os.path.join(launch_path, 'data', 'index'), str(i))
 
-cinput("[{0}] Watched {1} VODs for {2} total Minutes, Close it or press Enter to End this script ...".format(time.ctime(time.time()), len(vod_list), len(vod_list) * WATCH_TIME))
+    driver.quit()
+    
+while(True):
+    watch()
+    cinput("[{0}] Watched {1} VODs for {2} total Minutes, Close it or press Enter to Restart ...".format(time.ctime(time.time()), len(vod_list), len(vod_list) * WATCH_TIME))
