@@ -13,8 +13,6 @@ if os.name == "nt": exe = ".exe"
 
 launch_path = os.path.dirname(os.path.abspath(__file__))
 
-vod_list = []
-
 def file_read(path):
     with open(path, "r") as f: lines = [line.strip() for line in f if not line.startswith("#")]
     return lines
@@ -38,12 +36,15 @@ def cinput(text):
     else:
         raw_input(text)
 
-for line in file_read(os.path.join(launch_path, 'data', 'index')):
-    index = int(line.strip())
-for line in file_read(os.path.join(launch_path, 'data', 'sources_vods')):
-    if len(line) > 4: vod_list.append(line.strip())
-
 def watch():
+    index = 0
+    for line in file_read(os.path.join(launch_path, 'data', 'index')):
+        index = int(line.strip())
+    
+    vod_list = []
+    for line in file_read(os.path.join(launch_path, 'data', 'sources_vods')):
+        if len(line) > 4: vod_list.append(line.strip())
+
     try: driver = webdriver.Firefox(executable_path=os.path.join(launch_path, "driver", "geckodriver" + exe))
     except Exception as e:
         print("WebDriver: Error occured with Firefox: {0}, forcing Chrome...".format(e))
@@ -72,8 +73,7 @@ def watch():
         file_write(os.path.join(launch_path, 'data', 'index'), str(i))
 
     driver.quit()
-    
-while(True):
-    watch()
+
     cinput("[{0}] Watched {1} VODs for {2} total Minutes, Close it or press Enter to Restart ...".format(time.ctime(time.time()), len(vod_list), len(vod_list) * WATCH_TIME))
-    index = 0
+    
+while(True): watch()
