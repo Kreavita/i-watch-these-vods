@@ -13,9 +13,7 @@ if os.name == "nt": exe = ".exe"
 
 launch_path = os.path.dirname(os.path.abspath(__file__))
 
-index = 0
 vod_list = []
-
 
 def file_read(path):
     with open(path, "r") as f: lines = [line.strip() for line in f if not line.startswith("#")]
@@ -63,7 +61,7 @@ def watch():
         driver.get(vod_list[i])
         WebDriverWait(driver, 30).until(EC.frame_to_be_available_and_switch_to_it((By.ID, "video-player-youtube")))
         
-        try: WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'ytp-large-play-button')]"))).click()
+        try: WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'ytp-large-play-button')]"))).click()
         except: pass
             
         driver.switch_to.default_content()
@@ -78,3 +76,4 @@ def watch():
 while(True):
     watch()
     cinput("[{0}] Watched {1} VODs for {2} total Minutes, Close it or press Enter to Restart ...".format(time.ctime(time.time()), len(vod_list), len(vod_list) * WATCH_TIME))
+    index = 0
